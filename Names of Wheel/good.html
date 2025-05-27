@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wheel of Birthdays</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+      @keyframes ping {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        75%,
+        100% {
+          transform: scale(2);
+          opacity: 0;
+        }
+      }
+      .animate-ping {
+        animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+
+      @media (max-width: 768px) {
+        #zoom-container {
+          animation: none !important;
+        }
+      }
+
+      /* Confetti Canvas Styling */
+      #confetti-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 40; /* Below popup (z-50) but above other content */
+        pointer-events: none; /* Allows clicks to pass through */
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-50 min-h-screen flex flex-col lg:flex-row items-start justify-start lg:justify-center p-4 gap-4"
+  >
+    <!-- Main App Content -->
+    <div id="app" class="w-full lg:w-[60vw] order-1 lg:order-none">
+      <div class="text-center mb-4 lg:mb-8">
+        <h1 class="text-2xl lg:text-4xl font-bold text-purple-600 mb-1 lg:mb-2">
+          Wheel of Names
+        </h1>
+        <p class="text-sm lg:text-lg text-gray-600">
+          Spin the wheel, let luck choose!
+        </p>
+      </div>
+
+      <div id="wheel-container"></div>
+      <div id="popup-container"></div>
+
+      <!-- Show Sidebar Button (Initially Hidden) -->
+      <div id="show-sidebar-container" class="hidden fixed right-4 top-4 z-30">
+        <button
+          id="show-sidebar"
+          class="p-2 rounded-md bg-purple-500 text-white hover:bg-purple-600 focus:outline-none"
+          title="Show Sidebar"
+        >
+          <i data-lucide="eye" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div
+      id="sidebar"
+      class="w-full lg:w-[30vw] bg-white rounded-lg shadow-md border border-gray-200 flex flex-col h-auto lg:h-[calc(100vh-2rem)] order-2 lg:order-none mt-4 lg:mt-0"
+    >
+      <!-- Tabs -->
+      <div class="flex border-b border-gray-200">
+        <button
+          id="entries-tab"
+          class="flex-1 py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-semibold text-gray-700 bg-gray-100 rounded-tl-lg focus:outline-none active-tab"
+        >
+          Entries
+          <span
+            id="entry-count"
+            class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded ml-1 lg:ml-2"
+            >7</span
+          >
+        </button>
+        <button
+          id="results-tab"
+          class="flex-1 py-2 lg:py-3 px-2 lg:px-4 text-xs lg:text-sm font-semibold text-gray-700 focus:outline-none"
+        >
+          Results
+          <span
+            id="result-count"
+            class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded ml-1 lg:ml-2"
+            >2</span
+          >
+        </button>
+        <button
+          id="hide-sidebar"
+          class="p-2 lg:p-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+        >
+          <i data-lucide="eye-off" class="w-4 lg:w-5 h-4 lg:h-5"></i>
+        </button>
+      </div>
+
+      <!-- Tab Content -->
+      <div id="tab-content" class="flex-1 flex flex-col">
+        <!-- Entries Section -->
+        <div id="entries-section" class="flex-1 flex flex-col p-2 lg:p-4">
+          <!-- Controls -->
+          <div class="flex items-center justify-between mb-2 lg:mb-4">
+            <div class="flex space-x-1 lg:space-x-2">
+              <button
+                id="shuffle-button"
+                class="p-1 lg:p-2 rounded-md text-gray-600 hover:bg-purple-50 focus:outline-none"
+                title="Shuffle"
+              >
+                <i data-lucide="shuffle" class="w-4 lg:w-5 h-4 lg:h-5"></i>
+              </button>
+              <button
+                id="sort-button"
+                class="p-1 lg:p-2 rounded-md text-gray-600 hover:bg-purple-50 focus:outline-none"
+                title="Sort"
+              >
+                <i
+                  data-lucide="arrow-up-down"
+                  class="w-4 lg:w-5 h-4 lg:h-5"
+                ></i>
+              </button>
+            </div>
+          </div>
+          <!-- Add Name Input -->
+          <div class="mb-2 lg:mb-4">
+            <input
+              id="add-name-input"
+              type="text"
+              placeholder="Add new name..."
+              class="w-full p-2 text-sm lg:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+          </div>
+          <!-- Name List -->
+          <div
+            id="name-list"
+            class="flex-1 overflow-y-auto border border-gray-300 rounded-md p-1 lg:p-2 min-h-[200px]"
+          >
+            <ul id="names" class="space-y-1 text-gray-800">
+              <!-- Names will be populated dynamically -->
+            </ul>
+          </div>
+        </div>
+        <!-- Results Section (Hidden by default) -->
+        <div
+          id="results-section"
+          class="flex-1 p-2 lg:p-4 hidden min-h-[200px]"
+        >
+          <ul id="results" class="space-y-2 text-gray-800">
+            <!-- Results will be populated dynamically -->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Constants for the Wheel
+        const SEGMENT_COLORS = [
+          "#FF6B6B",
+          "#FFD166",
+          "#06D6A0",
+          "#118AB2",
+          "#6A4C93",
+          "#E76F51",
+          "#F4A261",
+          "#E9C46A",
+          "#2A9D8F",
+          "#8338EC",
+          "#A64AC9",
+          "#F72585",
+        ];
+
+        // WheelOfBirthdays Component
+        class WheelOfBirthdays {
+          constructor(containerId, onSpinComplete) {
+            this.container = document.getElementById(containerId);
+            this.onSpinComplete = onSpinComplete;
+            this.sidebarManager = null; // Will be set after initialization
+            this.isSpinning = false;
+            this.rotation = 0;
+            this.radius = window.innerWidth < 768 ? 150 : 250; // Smaller radius for mobile
+            this.cx = this.radius;
+            this.cy = this.radius;
+          }
+
+          initialize(sidebarManager) {
+            this.sidebarManager = sidebarManager;
+            this.render(); // Render after sidebarManager is set
+
+            // Handle window resize
+            window.addEventListener("resize", () => {
+              this.radius = window.innerWidth < 768 ? 150 : 250;
+              this.cx = this.radius;
+              this.cy = this.radius;
+              this.render();
+            });
+          }
+
+          getTextColorForBackground(hexColor) {
+            try {
+              if (!hexColor.startsWith("#") || hexColor.length !== 7)
+                return "#FFFFFF";
+              const r = parseInt(hexColor.slice(1, 3), 16);
+              const g = parseInt(hexColor.slice(3, 5), 16);
+              const b = parseInt(hexColor.slice(5, 7), 16);
+              const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+              return luminance > 0.5 ? "#333333" : "#FFFFFF";
+            } catch (e) {
+              return "#FFFFFF";
+            }
+          }
+
+          getCoordinatesForAngle(angleDegrees, r = this.radius) {
+            const angleRadians = (angleDegrees * Math.PI) / 180;
+            return [
+              this.cx + r * Math.cos(angleRadians),
+              this.cy + r * Math.sin(angleRadians),
+            ];
+          }
+
+          handleSpin() {
+            if (this.isSpinning || !this.sidebarManager.names.length) return;
+
+            this.isSpinning = true;
+            const numSegments = this.sidebarManager.names.length;
+            const segmentAngleDegrees = 360 / numSegments;
+            const winningSegmentIndex = Math.floor(Math.random() * numSegments);
+            const angleToAlignMiddleWithPointer = -(
+              winningSegmentIndex * segmentAngleDegrees +
+              segmentAngleDegrees / 2
+            );
+            const randomFullSpins = (5 + Math.floor(Math.random() * 3)) * 360;
+
+            const currentEffectiveRotation = this.rotation % 360;
+            const adjustmentToAlign =
+              (angleToAlignMiddleWithPointer - currentEffectiveRotation + 360) %
+              360;
+            const newTargetRotation =
+              this.rotation + randomFullSpins + adjustmentToAlign;
+
+            this.rotation = newTargetRotation;
+            this.wheelElement.style.transition =
+              "transform 5s cubic-bezier(0.33, 1, 0.68, 1)";
+            this.wheelElement.style.transform = `rotate(${this.rotation}deg)`;
+
+            setTimeout(() => {
+              this.isSpinning = false;
+              this.wheelElement.style.transition = "none";
+              const selectedName =
+                this.sidebarManager.names[winningSegmentIndex];
+              this.onSpinComplete(selectedName);
+              this.sidebarManager.addResult(`Selected: ${selectedName}`);
+            }, 5000);
+          }
+
+          refresh() {
+            this.render();
+          }
+
+          render() {
+            const names =
+              this.sidebarManager && this.sidebarManager.names.length
+                ? this.sidebarManager.names
+                : ["No names added"];
+            const numSegments = names.length;
+            const segmentAngleDegrees = 360 / numSegments;
+
+            const segments = names.map((name, index) => {
+              const startAngle = index * segmentAngleDegrees;
+              const endAngle = (index + 1) * segmentAngleDegrees;
+              const [startX, startY] = this.getCoordinatesForAngle(startAngle);
+              const [endX, endY] = this.getCoordinatesForAngle(endAngle);
+
+              const pathData = `M ${this.cx} ${this.cy} L ${startX} ${startY} A ${this.radius} ${this.radius} 0 0 1 ${endX} ${endY} Z`;
+
+              const textAngle = startAngle + segmentAngleDegrees / 2;
+              const textRadius = this.radius * 0.65;
+              const [textX, textY] = this.getCoordinatesForAngle(
+                textAngle,
+                textRadius
+              );
+              const textColor = this.getTextColorForBackground(
+                SEGMENT_COLORS[index % SEGMENT_COLORS.length]
+              );
+
+              return {
+                path: pathData,
+                color: SEGMENT_COLORS[index % SEGMENT_COLORS.length],
+                name: name.substring(0, 10).toUpperCase(),
+                textX,
+                textY,
+                textTransform: `rotate(${textAngle + 90}, ${textX}, ${textY})`,
+                textColor,
+              };
+            });
+
+            const isMobile = window.innerWidth < 768;
+            const wheelSize = isMobile ? "320px" : "520px";
+            const spinButtonSize = isMobile ? "80px" : "128px";
+            const spinButtonFontSize = isMobile ? "1rem" : "1.5rem";
+            const pointerPosition = isMobile ? "85px" : "195px";
+
+            const wheelHTML = `
+              <div class="relative flex flex-col items-center justify-center my-4 lg:my-8 select-none" role="application" aria-label="Name Wheel Game">
+                <div class="absolute right-[${pointerPosition}] top-1/2 z-20 transform -translate-y-1/2 drop-shadow-lg">
+                  <svg width="${isMobile ? "24" : "32"}" height="${
+              isMobile ? "36" : "48"
+            }" viewBox="0 0 32 48" aria-hidden="true">
+                    <path d="M0 24L32 0V48L0 24Z" class="fill-purple-500" />
+                  </svg>
+                </div>
+                
+                <div class="w-[${wheelSize}] h-[${wheelSize}] rounded-full flex items-center justify-center shadow-2xl bg-gradient-to-br from-purple-600 via-purple-400 to-purple-500 p-2">
+                  <div id="zoom-container" class="w-full h-full rounded-full relative overflow-hidden border-4 border-white">
+                    <div id="wheel" class="w-full h-full">
+                      <svg viewBox="0 0 ${this.radius * 2} ${
+              this.radius * 2
+            }" class="w-full h-full" aria-label="Spinning wheel with names" role="img">
+                        ${segments
+                          .map(
+                            (seg, i) => `
+                            <g key="${i}">
+                              <path d="${seg.path}" fill="${
+                              seg.color
+                            }" stroke="white" stroke-width="2" />
+                              <text
+                                x="${seg.textX}"
+                                y="${seg.textY}"
+                                transform="${seg.textTransform}"
+                                text-anchor="middle"
+                                dominant-baseline="central"
+                                fill="${seg.textColor}"
+                                font-size="${isMobile ? "12" : "16"}"
+                                font-weight="600"
+                                letter-spacing="0.5"
+                                class="pointer-events-none"
+                                aria-label="${names[i]}"
+                              >
+                                ${seg.name}
+                              </text>
+                            </g>
+                          `
+                          )
+                          .join("")}
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
+                <button id="spin-button" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[${spinButtonSize}] h-[${spinButtonSize}] rounded-full text-[${spinButtonFontSize}] font-bold border-4 border-white shadow-xl z-10 bg-purple-600 hover:bg-purple-600/90 focus:ring-4 focus:ring-purple-600/50 flex items-center justify-center ${
+              !this.sidebarManager || !this.sidebarManager.names.length
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }" 
+                  aria-label="${
+                    this.isSpinning ? "Spinning wheel" : "Spin the wheel"
+                  }" 
+                  ${
+                    !this.sidebarManager || !this.sidebarManager.names.length
+                      ? "disabled"
+                      : ""
+                  }>
+                  ${this.isSpinning ? "..." : "SPIN"}
+                </button>
+              </div>
+            `;
+
+            this.container.innerHTML = wheelHTML;
+            this.wheelElement = document.getElementById("wheel");
+            this.zoomContainer = document.getElementById("zoom-container");
+            const spinButton = document.getElementById("spin-button");
+            if (spinButton) {
+              spinButton.addEventListener("click", () => {
+                console.log("Event listener triggered for spin button");
+                this.handleSpin();
+              });
+            } else {
+              console.error("Spin button not found in the DOM");
+            }
+          }
+        }
+
+        // SidebarManager Component
+        class SidebarManager {
+          constructor(wheel) {
+            this.wheel = wheel;
+            this.names = [
+              "Ali",
+              "Charles",
+              "Diya",
+              "Eric",
+              "Fatima",
+              "Gabriel",
+              "Hanna",
+              "Noman",
+              "Rai",
+            ];
+            this.results = [];
+            this.entryCountElement = document.getElementById("entry-count");
+            this.resultCountElement = document.getElementById("result-count");
+            this.nameListElement = document.getElementById("names");
+            this.resultListElement = document.getElementById("results");
+            this.shuffleButton = document.getElementById("shuffle-button");
+            this.sortButton = document.getElementById("sort-button");
+            this.addNameInput = document.getElementById("add-name-input");
+            this.hideSidebarButton = document.getElementById("hide-sidebar");
+            this.showSidebarButton = document.getElementById("show-sidebar");
+            this.showSidebarContainer = document.getElementById(
+              "show-sidebar-container"
+            );
+            this.sidebar = document.getElementById("sidebar");
+            this.entriesTab = document.getElementById("entries-tab");
+            this.resultsTab = document.getElementById("results-tab");
+            this.entriesSection = document.getElementById("entries-section");
+            this.resultsSection = document.getElementById("results-section");
+            this.isSidebarVisible = true;
+            this.activeTab = "entries";
+
+            this.init();
+          }
+
+          init() {
+            this.renderNames();
+            this.renderResults();
+            this.updateCounts();
+
+            this.shuffleButton.addEventListener("click", () =>
+              this.shuffleNames()
+            );
+            this.sortButton.addEventListener("click", () => this.sortNames());
+            this.addNameInput.addEventListener("keypress", (e) => {
+              if (e.key === "Enter" && this.addNameInput.value.trim()) {
+                this.addName(this.addNameInput.value.trim());
+                this.addNameInput.value = "";
+              }
+            });
+            this.hideSidebarButton.addEventListener("click", () =>
+              this.toggleSidebar()
+            );
+            this.showSidebarButton.addEventListener("click", () =>
+              this.toggleSidebar()
+            );
+            this.entriesTab.addEventListener("click", () =>
+              this.switchTab("entries")
+            );
+            this.resultsTab.addEventListener("click", () =>
+              this.switchTab("results")
+            );
+
+            // On mobile, hide sidebar by default
+            if (window.innerWidth < 768) {
+              this.toggleSidebar();
+            }
+          }
+
+          renderNames() {
+            this.nameListElement.innerHTML = this.names
+              .map(
+                (name, index) => `
+                <li class="flex items-center justify-between p-2 hover:bg-purple-50 rounded">
+                  <span class="text-sm lg:text-base">${name}</span>
+                  <button class="remove-name text-red-500 hover:text-red-700" data-index="${index}">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </li>
+              `
+              )
+              .join("");
+            this.nameListElement
+              .querySelectorAll(".remove-name")
+              .forEach((button) => {
+                button.addEventListener("click", () => {
+                  const index = button.getAttribute("data-index");
+                  this.removeName(index);
+                });
+              });
+            lucide.createIcons();
+          }
+
+          renderResults() {
+            this.resultListElement.innerHTML = this.results.length
+              ? this.results
+                  .map(
+                    (result, index) => `
+                  <li class="p-2 bg-gray-50 rounded text-sm lg:text-base">${result}</li>
+                `
+                  )
+                  .join("")
+              : "<li class='p-2 text-gray-500 text-sm lg:text-base'>No results yet.</li>";
+          }
+
+          updateCounts() {
+            this.entryCountElement.textContent = this.names.length;
+            this.resultCountElement.textContent = this.results.length;
+          }
+
+          addName(name) {
+            this.names.push(name);
+            this.renderNames();
+            this.updateCounts();
+            if (this.wheel) this.wheel.refresh();
+          }
+
+          removeName(index) {
+            this.names.splice(index, 1);
+            this.renderNames();
+            this.updateCounts();
+            if (this.wheel) this.wheel.refresh();
+          }
+
+          shuffleNames() {
+            for (let i = this.names.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [this.names[i], this.names[j]] = [this.names[j], this.names[i]];
+            }
+            this.renderNames();
+            if (this.wheel) this.wheel.refresh();
+          }
+
+          sortNames() {
+            this.names.sort();
+            this.renderNames();
+            if (this.wheel) this.wheel.refresh();
+          }
+
+          toggleSidebar() {
+            this.isSidebarVisible = !this.isSidebarVisible;
+            this.sidebar.style.display = this.isSidebarVisible
+              ? "flex"
+              : "none";
+            this.showSidebarContainer.style.display = this.isSidebarVisible
+              ? "none"
+              : "block";
+            this.hideSidebarButton.innerHTML = `<i data-lucide="${
+              this.isSidebarVisible ? "eye-off" : "eye"
+            }" class="w-4 lg:w-5 h-4 lg:h-5"></i>`;
+            lucide.createIcons();
+          }
+
+          switchTab(tab) {
+            if (this.activeTab === tab) return;
+            this.activeTab = tab;
+            this.entriesTab.classList.toggle("active-tab", tab === "entries");
+            this.resultsTab.classList.toggle("active-tab", tab === "results");
+            this.entriesSection.classList.toggle("hidden", tab !== "entries");
+            this.resultsSection.classList.toggle("hidden", tab !== "results");
+          }
+
+          addResult(result) {
+            this.results.unshift(result);
+            this.renderResults();
+            this.updateCounts();
+          }
+        }
+
+        // CongratsPopup Component
+        class CongratsPopup {
+          constructor(containerId) {
+            this.container = document.getElementById(containerId);
+            this.isOpen = false;
+            this.name = null;
+            this.messageTemplate =
+              "Hooray! The wheel has chosen **{name}**! May this selection bring joy and celebrations!";
+            this.confettiCanvas = null;
+          }
+
+          initConfetti() {
+            // Create or reuse canvas for confetti
+            if (!this.confettiCanvas) {
+              this.confettiCanvas = document.createElement("canvas");
+              this.confettiCanvas.id = "confetti-canvas";
+              document.body.appendChild(this.confettiCanvas);
+            }
+            // Set canvas size to full screen
+            this.confettiCanvas.width = window.innerWidth;
+            this.confettiCanvas.height = window.innerHeight;
+            // Handle window resize
+            window.addEventListener("resize", () => {
+              this.confettiCanvas.width = window.innerWidth;
+              this.confettiCanvas.height = window.innerHeight;
+            });
+          }
+
+          triggerConfetti() {
+            const isMobile = window.innerWidth < 768;
+            const particleCount = isMobile ? 100 : 200; // Fewer particles on mobile for performance
+            const duration = 1 * 1000; // 5 seconds
+            const animationEnd = Date.now() + duration;
+            const colors = ["#FF6B6B", "#FFD166", "#06D6A0", "#118AB2", "#6A4C93", "#F72585"]; // Match wheel colors
+
+            const confetti = window.confetti;
+
+            // Multiple bursts with varying spread and origin
+            const fireConfetti = () => {
+              const timeLeft = animationEnd - Date.now();
+              if (timeLeft <= 0) return;
+
+              // Left burst
+              confetti({
+                particleCount: Math.floor(particleCount * 0.3),
+                spread: 60,
+                origin: { x: 0.2, y: 0.6 },
+                colors,
+                angle: 60,
+                startVelocity: isMobile ? 30 : 45,
+                scalar: isMobile ? 0.8 : 1,
+              });
+
+              // Right burst
+              confetti({
+                particleCount: Math.floor(particleCount * 0.3),
+                spread: 60,
+                origin: { x: 0.8, y: 0.6 },
+                colors,
+                angle: 120,
+                startVelocity: isMobile ? 30 : 45,
+                scalar: isMobile ? 0.8 : 1,
+              });
+
+              // Center burst
+              confetti({
+                particleCount: Math.floor(particleCount * 0.4),
+                spread: 80,
+                origin: { x: 0.5, y: 0.7 },
+                colors,
+                startVelocity: isMobile ? 35 : 50,
+                scalar: isMobile ? 0.8 : 1,
+              });
+
+              setTimeout(fireConfetti, 100);
+            };
+
+            fireConfetti();
+          }
+
+          open(name) {
+            this.name = name;
+            this.isOpen = true;
+            this.initConfetti();
+            this.triggerConfetti();
+            this.render();
+          }
+
+          close() {
+            this.isOpen = false;
+            this.render();
+            // Clear confetti canvas
+            if (this.confettiCanvas) {
+              const ctx = this.confettiCanvas.getContext("2d");
+              ctx.clearRect(0, 0, this.confettiCanvas.width, this.confettiCanvas.height);
+            }
+          }
+
+          render() {
+            if (!this.isOpen || !this.name) {
+              this.container.innerHTML = "";
+              return;
+            }
+
+            const messageParts = this.messageTemplate.split("{name}");
+
+            const popupHTML = `
+              <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-sm sm:max-w-md">
+                  <div class="relative h-40 sm:h-48 w-full">
+                    <img src="https://placehold.co/600x300/A64AC9/FFFFFF.png?text=Celebration!" alt="Celebration background" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center p-4 sm:p-6">
+                      <i data-lucide="party-popper" class="h-12 sm:h-16 w-12 sm:w-16 text-white opacity-80 drop-shadow-lg animate-pulse"></i>
+                    </div>
+                  </div>
+                  <div class="p-4 sm:p-6 text-center">
+                    <h3 class="text-2xl sm:text-3xl font-bold text-purple-600 flex items-center justify-center">
+                      <i data-lucide="gift" class="h-6 sm:h-8 w-6 sm:w-8 mr-2 sm:mr-3 text-purple-500"></i>
+                      Congratulations!
+                    </h3>
+                    <p class="text-base sm:text-lg text-gray-600 mt-2 sm:mt-4">
+                      ${messageParts[0]}
+                      <strong class="text-purple-500 font-semibold">${this.name}</strong>
+                      ${messageParts[1]}
+                    </p>
+                  </div>
+                  <div class="p-4 sm:p-6 pt-0 sm:pt-4 bg-transparent">
+                    <button id="close-popup" class="w-full bg-purple-500 hover:bg-purple-500/90 text-white text-base sm:text-lg py-2 sm:py-3 rounded-md">
+                      Awesome!
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            this.container.innerHTML = popupHTML;
+            document
+              .getElementById("close-popup")
+              .addEventListener("click", () => this.close());
+            lucide.createIcons();
+          }
+        }
+
+        // Initialize the app
+        const popup = new CongratsPopup("popup-container");
+        const wheel = new WheelOfBirthdays("wheel-container", (name) => {
+          popup.open(name);
+        });
+        const sidebarManager = new SidebarManager(wheel);
+        wheel.initialize(sidebarManager); // Initialize wheel with sidebarManager
+      });
+    </script>
+  </body>
+</html>

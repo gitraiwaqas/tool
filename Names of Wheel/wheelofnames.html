@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wheel of Birthdays</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      @keyframes ping {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        75%,
+        100% {
+          transform: scale(2);
+          opacity: 0;
+        }
+      }
+      .animate-ping {
+        animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+      
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-row items-start justify-center p-4 gap-4">
+    <!-- Main App Content (60% width) -->
+    <!-- Main App Content (60% width) -->
+<div id="app" class="w-[60vw]">
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-primary mb-2">Wheel of Names</h1>
+    <p class="text-lg text-gray-600">
+      Spin to discover your special month!
+    </p>
+  </div>
+
+  <div id="wheel-container"></div>
+  <div id="popup-container"></div>
+  <!-- Show Sidebar Button (Initially Hidden) -->
+  <div id="show-sidebar-container" class="hidden fixed right-4 top-4 z-30">
+    <button id="show-sidebar" class="p-2 rounded-md bg-purple-500 text-white hover:bg-purple-600 focus:outline-none" title="Show Sidebar">
+      <i data-lucide="eye" class="w-5 h-5"></i>
+    </button>
+  </div>
+</div>
+    <!-- Sidebar (30% width, on the right) -->
+  <!-- Sidebar (30% width, on the right) -->
+<div id="sidebar" class="w-[30vw] bg-white rounded-lg shadow-md border border-gray-200 flex flex-col h-[calc(100vh-2rem)]">
+  <!-- Tabs -->
+  <div class="flex border-b border-gray-200">
+    <button id="entries-tab" class="flex-1 py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-100 rounded-tl-lg focus:outline-none active-tab">
+      Entries <span id="entry-count" class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded ml-2">7</span>
+    </button>
+    <button id="results-tab" class="flex-1 py-3 px-4 text-sm font-semibold text-gray-700 focus:outline-none">
+      Results <span id="result-count" class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded ml-2">2</span>
+    </button>
+    <button id="hide-sidebar" class="p-4 text-gray-500 hover:text-gray-700 focus:outline-none">
+      <i data-lucide="eye-off" class="w-5 h-5"></i>
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div id="tab-content" class="flex-1 flex flex-col">
+    <!-- Entries Section -->
+    <div id="entries-section" class="flex-1 flex flex-col p-4">
+      <!-- Controls -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex space-x-2">
+          <button id="shuffle-button" class="p-2 rounded-md text-gray-600 hover:bg-purple-50 focus:outline-none" title="Shuffle">
+            <i data-lucide="shuffle" class="w-5 h-5"></i>
+          </button>
+          <button id="sort-button" class="p-2 rounded-md text-gray-600 hover:bg-purple-50 focus:outline-none" title="Sort">
+            <i data-lucide="arrow-up-down" class="w-5 h-5"></i>
+          </button>
+          <button id="add-image-button" class="p-2 rounded-md text-gray-600 hover:bg-purple-50 focus:outline-none" title="Add Image">
+            <i data-lucide="image" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <label class="flex items-center space-x-1 text-sm text-gray-600">
+          <input type="checkbox" id="advanced-checkbox" class="h-4 w-4 text-purple-500 focus:ring-purple-500 border-gray-300 rounded">
+          <span>Advanced</span>
+        </label>
+      </div>
+      <!-- Add Name Input -->
+      <div class="mb-4">
+        <input id="add-name-input" type="text" placeholder="Add new name..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+      </div>
+      <!-- Name List -->
+      <div id="name-list" class="flex-1 overflow-y-auto border border-gray-300 rounded-md p-2">
+        <ul id="names" class="space-y-1 text-gray-800">
+          <!-- Names will be populated dynamically -->
+        </ul>
+      </div>
+    </div>
+    <!-- Results Section (Hidden by default) -->
+    <div id="results-section" class="flex-1 p-4 hidden">
+      <ul id="results" class="space-y-2 text-gray-800">
+        <!-- Results will be populated dynamically -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="p-4 border-t border-gray-200 flex justify-between items-center">
+    <span class="text-sm text-gray-600">Version 353 <span class="bg-blue-500 text-white text-xs font-medium px-2 py-0.5 rounded">New!</span></span>
+    <a href="#" class="text-sm text-blue-500 hover:underline">Changelog</a>
+  </div>
+</div>
+    <script src="wheelofnames.js"></script>
+  </body>
+</html>
