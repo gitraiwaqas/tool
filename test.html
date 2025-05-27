@@ -3,54 +3,586 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Birthday Wheel</title>
+  <title>Best Jan. Birthday Wheel</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #3b82f6;
+      --pink: #ec4899;
+      --green: #10b981;
+      --gray: #f3f4f6;
+      --dark: #1f2937;
+      --bg: #f9fafb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--dark);
+      padding: 2rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      color: var(--blue);
+      text-align: center;
+      font-weight: 800;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      letter-spacing: -0.5px;
+    }
+
+    h1 span {
+      color: var(--pink);
+    }
+
+    .card {
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 1400px;
+    }
+
+    .layout {
+      display: flex; /* Changed to flexbox for better mobile control */
+      flex-direction: row; /* Default: side-by-side on desktop */
+      gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .layout {
+        flex-direction: column; /* Stack wheel above sidebar on mobile */
+        align-items: center;
+      }
+      .wheel-container {
+        order: -1; /* Ensure wheel appears first */
+      }
+      .sidebar {
+        order: 1; /* Sidebar appears below wheel */
+        width: 100%;
+        max-width: 500px;
+      }
+    }
+
+    .wheel-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .wheel {
+      width: min(90vw, 540px);
+      height: min(90vw, 540px);
+      border-radius: 50%;
+      border: 10px solid var(--dark);
+      background: conic-gradient(
+        #3B82F6 0deg 30deg,
+        #F472B6 30deg 60deg,
+        #FACC15 60deg 90deg,
+        #10B981 90deg 120deg,
+        #8B5CF6 120deg 150deg,
+        #EC4899 150deg 180deg,
+        #14B8A6 180deg 210deg,
+        #F97316 210deg 240deg,
+        #6366F1 240deg 270deg,
+        #EF4444 270deg 300deg,
+        #A855F7 300deg 330deg,
+        #22D3EE 330deg 360deg
+      );
+      position: relative;
+      transition: transform 4s cubic-bezier(0.3, 0.7, 0.2, 1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      animation: glow 2s ease-in-out infinite; /* Added glow animation */
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.5); }
+      50% { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 40px rgba(59, 130, 246, 0.8); }
+    }
+
+    .wheel-label {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      text-align: center;
+      font-weight: bold;
+      font-size: 12px;
+      color: white;
+      pointer-events: none;
+    }
+
+    .wheel-label span {
+      position: absolute;
+      left: 50%;
+      top: 18px;
+      transform: translateX(-50%) rotate(90deg);
+      transform-origin: left center;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    }
+
+    .spin-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 80px;
+      height: 80px;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      z-index: 30;
+      transition: transform 0.3s ease;
+    }
+
+    .spin-btn:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .spin-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .spin-btn:disabled:hover {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .spin-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50% 0px 50% 50%;
+      transform: rotate(-45deg);
+      background: rgb(34, 34, 34);
+      z-index: 2;
+    }
+
+    .spin-btn span {
+      position: relative;
+      z-index: 3;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .sidebar {
+      max-height: min(90vw, 400px);
+      overflow-y: auto;
+      padding-right: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gray) transparent;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--gray);
+      border-radius: 10px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: var(--dark);
+    }
+
+    .sidebar h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--blue);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .month-item {
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .month-item:hover {
+      background-color: var(--gray);
+      transform: translateX(5px);
+    }
+
+    .month-actions button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-left: 0.3rem;
+      padding: 5px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .month-actions button:hover {
+      background-color: var(--blue);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .add-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .add-form input {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      border: 2px solid var(--blue);
+      background: linear-gradient(135deg, var(--bg), #ffffff);
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      color: var(--dark);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+
+    .add-form input:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 6px 15px rgba(16, 185, 129, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .add-form input::placeholder {
+      color: var(--gray);
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    .add-form input:hover {
+      background: linear-gradient(135deg, #f3f4f6, #ffffff);
+    }
+
+    .add-form button {
+      background-color: var(--green);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .add-form button:hover {
+      background-color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal.show {
+      display: flex;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #ffffff, #e0f7fa);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.3);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transform: scale(0.9);
+      animation: popIn 0.4s ease-out forwards;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .modal-content h3 {
+      font-size: 2rem;
+      font-family: 'Poppins', sans-serif;
+      color: var(--pink);
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      animation: bounce 0.6s ease-in-out;
+    }
+
+    .modal-content p {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--dark);
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-content button {
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+
+    .modal-content button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .modal-content .confetti {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .full-confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 998;
+      display: none;
+    }
+
+    .full-confetti.show {
+      display: block;
+    }
+
+    .confetti::before,
+    .confetti::after,
+    .confetti > div,
+    .full-confetti > div {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: confettiFall 3s infinite linear;
+    }
+
+    .confetti::before {
+      left: 20%;
+      background: var(--blue);
+      animation-delay: 0.2s;
+    }
+
+    .confetti::after {
+      left: 40%;
+      background: var(--green);
+      animation-delay: 0.4s;
+    }
+
+    .confetti > div:nth-child(1) {
+      left: 60%;
+      background: var(--pink);
+      animation-delay: 0.6s;
+    }
+
+    .confetti > div:nth-child(2) {
+      left: 80%;
+      background: var(--blue);
+      animation-delay: 0.8s;
+    }
+
+    .confetti > div:nth-child(3) {
+      left: 30%;
+      background: var(--green);
+      animation-delay: 1s;
+    }
+
+    .full-confetti > div:nth-child(1) {
+      left: 10%;
+      top: -20px;
+      background: var(--pink);
+      animation-delay: 0s;
+    }
+
+    .full-confetti > div:nth-child(2) {
+      left: 30%;
+      top: -30px;
+      background: var(--blue);
+      animation-delay: 0.2s;
+    }
+
+    .full-confetti > div:nth-child(3) {
+      left: 50%;
+      top: -10px;
+      background: var(--green);
+      animation-delay: 0.4s;
+    }
+
+    .full-confetti > div:nth-child(4) {
+      left: 70%;
+      top: -25px;
+      background: var(--pink);
+      animation-delay: 0.6s;
+    }
+
+    .full-confetti > div:nth-child(5) {
+      left: 90%;
+      top: -15px;
+      background: var(--blue);
+      animation-delay: 0.8s;
+    }
+
+    /* Sound control button */
+    .sound-control {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+      z-index: 1000;
+    }
+
+    .sound-control:hover {
+      transform: scale(1.1);
+      background: var(--green);
+    }
+
+    .sound-control.muted {
+      background: var(--gray);
+      color: var(--dark);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100%) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .spinning {
+      animation: pulse 0.5s ease-in-out;
+    }
+  </style>
 </head>
-<body class="font-inter bg-gray-50 text-gray-800 py-8 flex flex-col items-center min-h-screen relative">
-  <h1 class="font-poppins text-5xl mb-8 text-blue-500 text-center font-extrabold tracking-tight shadow-sm">Wheel of <span class="text-pink-500">Birthdays</span></h1>
+<body>
+
+  <h1>Best Jan. <span>Birthday</span> Wheel</h1>
 
   <!-- Sound control button -->
-  <button class="sound-control fixed top-5 right-5 bg-blue-500 text-white border-none rounded-full w-12 h-12 cursor-pointer text-xl transition-transform duration-300 shadow-lg hover:scale-110 hover:bg-green-500 z-50" id="soundToggle" title="Toggle Sound">🔊</button>
+  <button class="sound-control" id="soundToggle" title="Toggle Sound">🔊</button>
 
-  <div class="card p-8 rounded-3xl w-11/12 max-w-7xl">
-    <div class="grid grid-cols-3 gap-8 md:grid-cols-1">
-      <div class="wheel-container flex flex-col items-center relative">
-        <div class="wheel w-[min(90vw,540px)] h-[min(90vw,540px)] rounded-full border-[10px] border-gray-800 bg-[conic-gradient(#3B82F6_0deg_30deg,#F472B6_30deg_60deg,#FACC15_60deg_90deg,#10B981_90deg_120deg,#8B5CF6_120deg_150deg,#EC4899_150deg_180deg,#14B8A6_180deg_210deg,#F97316_210deg_240deg,#6366F1_240deg_270deg,#EF4444_270deg_300deg,#A855F7_300deg_330deg,#22D3EE_330deg_360deg)] relative transition-transform duration-[4s] ease-[cubic-bezier(0.3,0.7,0.2,1)] shadow-2xl" id="wheel"></div>
-        <button id="spinBtn" class="spin-btn absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent z-30 transition-transform duration-300 hover:scale-110 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100">
-          <span class="relative z-10 text-white font-bold text-xs tracking-wide flex items-center justify-center w-full h-full pointer-events-none">SPIN</span>
-        </button>
+  <div class="card">
+    <div class="layout">
+      <div class="wheel-container">
+        <div class="wheel" id="wheel"></div>
+        <button id="spinBtn" class="spin-btn"><span>SPIN</span></button>
       </div>
 
-      <div class="sidebar max-h-[min(90vw,400px)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-        <h2 class="text-2xl mb-4 text-blue-500 font-poppins">Manage Birthdays</h2>
+      <div class="sidebar">
+        <h2>Manage Jan. Birthdays</h2>
         <div id="monthList"></div>
-        <div class="add-form flex gap-2 mt-4">
-          <input type="text" id="newMonth" placeholder="e.g. 3 May" class="flex-1 p-3 rounded-xl border-2 border-blue-500 bg-gradient-to-br from-gray-50 to-white font-inter text-base text-gray-800 transition-all duration-300 shadow-md focus:outline-none focus:border-green-500 focus:shadow-lg focus:-translate-y-0.5 hover:bg-gradient-to-br hover:from-gray-200 hover:to-white" />
-          <button onclick="addMonth()" class="bg-green-500 text-white border-none p-3 rounded-lg cursor-pointer font-semibold transition-all duration-200 hover:bg-blue-500 hover:-translate-y-0.5 hover:shadow-lg">Add</button>
+        <div class="add-form">
+          <input type="text" id="newMonth" placeholder="e.g. 3 Jan" />
+          <button onclick="addMonth()">Add</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Modal -->
-  <div class="modal hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[999] backdrop-blur-sm" id="winnerModal">
-    <div class="modal-content bg-gradient-to-br from-white to-cyan-50 p-10 rounded-3xl shadow-2xl text-center relative overflow-hidden transform scale-90 animate-popIn max-w-md w-11/12">
-      <div class="confetti absolute inset-0 pointer-events-none z-0 overflow-hidden"></div>
-      <h3 class="text-3xl font-poppins text-pink-500 mb-4 animate-bounce">🎉 Congratulations! 🎉</h3>
-      <p class="text-xl font-medium text-gray-800 mb-6">The wheel landed on: <span id="winnerText"></span></p>
-      <button onclick="closeModal()" class="bg-gradient-to-r from-blue-500 to-green-500 text-white border-none p-3 rounded-lg font-semibold font-inter cursor-pointer transition-all duration-300 shadow-md hover:-translate-y-0.5 hover:shadow-lg">Awesome!</button>
+  <div class="modal" id="winnerModal">
+    <div class="modal-content">
+      <div class="confetti"></div>
+      <h3>🎉 Congratulations! 🎉</h3>
+      <p>The wheel landed on: <span id="winnerText"></span></p>
+      <button onclick="closeModal()">Awesome!</button>
     </div>
   </div>
 
   <!-- Full-page confetti layer -->
-  <div class="full-confetti hidden fixed inset-0 pointer-events-none z-[998]" id="fullConfetti"></div>
+  <div class="full-confetti" id="fullConfetti"></div>
 
   <script>
     let months = [
-      '1 Jan', '3 Feb', '12 Mar', '5 Apr',
-      '9 May', '22 Jun', '14 Jul', '18 Aug',
-      '7 Sep', '20 Oct', '2 Nov', '11 Dec'
+      '1 Jan', '3 Jan', '5 Jan', '7 Jan',
+      '9 Jan', '11 Jan', '13 Jan', '15 Jan',
+      '17 Jan', '19 Jan', '21 Jan', '23 Jan'
     ];
 
     let currentRotation = 0;
@@ -179,9 +711,9 @@
 
       months.forEach((entry, index) => {
         const label = document.createElement('div');
-        label.className = 'wheel-label absolute w-full h-full top-0 left-0 text-center font-bold text-xs text-white pointer-events-none';
+        label.className = 'wheel-label';
         label.style.transform = `rotate(${index * segmentAngle}deg)`;
-        label.innerHTML = `<span class="absolute left-1/2 top-4 transform -translate-x-1/2 rotate-90 origin-left text-shadow-md">${entry}</span>`;
+        label.innerHTML = `<span>${entry}</span>`;
         wheel.appendChild(label);
       });
     }
@@ -190,7 +722,7 @@
       monthList.innerHTML = '';
       months.forEach((entry, index) => {
         const div = document.createElement('div');
-        div.className = 'month-item rounded-lg p-3 flex justify-between items-center mb-2 transition-all duration-200 hover:bg-gray-200 hover:transform hover:translate-x-1';
+        div.className = 'month-item';
 
         const name = document.createElement('span');
         name.textContent = entry;
@@ -200,13 +732,11 @@
 
         const editBtn = document.createElement('button');
         editBtn.textContent = '✎';
-        editBtn.className = 'bg-transparent border-none text-base cursor-pointer ml-1 p-1 rounded transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110';
         editBtn.onclick = () => editMonth(index);
         editBtn.onmouseenter = () => playSound('hover');
 
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = '🗑';
-        deleteBtn.className = 'bg-transparent border-none text-base cursor-pointer ml-1 p-1 rounded transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110';
         deleteBtn.onclick = () => deleteMonth(index);
         deleteBtn.onmouseenter = () => playSound('hover');
 
@@ -225,7 +755,7 @@
       initAudio(); // Initialize audio on first interaction
       
       if (months.length === 0) {
-        alert('Please add at least one birthday!');
+        alert('Please add at least one January birthday!');
         return;
       }
 
@@ -297,7 +827,7 @@
 
     function editMonth(index) {
       initAudio();
-      const newName = prompt('Edit birthday:', months[index]);
+      const newName = prompt('Edit January birthday:', months[index]);
       if (newName && newName.trim() !== '') {
         months[index] = newName.trim();
         renderMonthList();
@@ -307,7 +837,7 @@
 
     function deleteMonth(index) {
       initAudio();
-      if (confirm('Delete this birthday?')) {
+      if (confirm('Delete this January birthday?')) {
         months.splice(index, 1);
         renderMonthList();
         playSound('delete');
@@ -355,179 +885,5 @@
       setTimeout(addHoverSounds, 0);
     };
   </script>
-
-  <style>
-    /* Custom styles for elements that TailwindCSS cannot fully replicate */
-    :root {
-      --blue: #3b82f6;
-      --pink: #ec4899;
-      --green: #10b981;
-      --gray: #f3f4f6;
-      --dark: #1f2937;
-      --bg: #f9fafb;
-    }
-
-    .spin-btn::before {
-      content: "";
-      position: absolute;
-      inset: 0px;
-      width: 80px;
-      height: 80px;
-      border-radius: 50% 0px 50% 50%;
-      transform: rotate(-45deg);
-      background: rgb(34, 34, 34);
-      z-index: 2;
-    }
-
-    .sidebar::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .sidebar::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .sidebar::-webkit-scrollbar-thumb {
-      background: var(--gray);
-      border-radius: 10px;
-    }
-
-    .sidebar::-webkit-scrollbar-thumb:hover {
-      background: var(--dark);
-    }
-
-    .confetti::before,
-    .confetti::after,
-    .confetti > div,
-    .full-confetti > div {
-      content: '';
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      animation: confettiFall 3s infinite linear;
-    }
-
-    .confetti::before {
-      left: 20%;
-      background: var(--blue);
-      animation-delay: 0.2s;
-    }
-
-    .confetti::after {
-      left: 40%;
-      background: var(--green);
-      animation-delay: 0.4s;
-    }
-
-    .confetti > div:nth-child(1) {
-      left: 60%;
-      background: var(--pink);
-      animation-delay: 0.6s;
-    }
-
-    .confetti > div:nth-child(2) {
-      left: 80%;
-      background: var(--blue);
-      animation-delay: 0.8s;
-    }
-
-    .confetti > div:nth-child(3) {
-      left: 30%;
-      background: var(--green);
-      animation-delay: 1s;
-    }
-
-    .full-confetti > div:nth-child(1) {
-      left: 10%;
-      top: -20px;
-      background: var(--pink);
-      animation-delay: 0s;
-    }
-
-    .full-confetti > div:nth-child(2) {
-      left: 30%;
-      top: -30px;
-      background: var(--blue);
-      animation-delay: 0.2s;
-    }
-
-    .full-confetti > div:nth-child(3) {
-      left: 50%;
-      top: -10px;
-      background: var(--green);
-      animation-delay: 0.4s;
-    }
-
-    .full-confetti > div:nth-child(4) {
-      left: 70%;
-      top: -25px;
-      background: var(--pink);
-      animation-delay: 0.6s;
-    }
-
-    .full-confetti > div:nth-child(5) {
-      left: 90%;
-      top: -15px;
-      background: var(--blue);
-      animation-delay: 0.8s;
-    }
-
-    .text-shadow-md {
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-    }
-
-    .animate-popIn {
-      animation: popIn 0.4s ease-out forwards;
-    }
-
-    .animate-bounce {
-      animation: bounce 0.6s ease-in-out;
-    }
-
-    .animate-pulse {
-      animation: pulse 0.5s ease-in-out;
-    }
-
-    .modal.show {
-      animation: fadeIn 0.5s ease-in-out;
-      display: flex;
-    }
-
-    .full-confetti.show {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes popIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    @keyframes confettiFall {
-      0% {
-        transform: translateY(-100%) rotate(0deg);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(100vh) rotate(720deg);
-        opacity: 0;
-      }
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-  </style>
 </body>
 </html>

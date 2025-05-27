@@ -1,20 +1,18 @@
-Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this "https://spinthewheel.app/best-jan-birthday" in this wheel but my styling as well as color scheme as well as font and sounds effect like this "
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Birthday Wheel</title>
+  <title>Best January Birthday Wheel</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --blue: #3b82f6;
-      --pink: #ec4899;
-      --green: #10b981;
-      --gray: #f3f4f6;
-      --dark: #1f2937;
-      --bg: #f9fafb;
+      --blue: #60A5FA; /* Softer blue inspired by spinthewheel.app */
+      --pink: #F9A8D4; /* Softer pink */
+      --green: #6EE7B7; /* Softer green */
+      --gray: #E5E7EB; /* Light gray */
+      --dark: #374151; /* Soft dark */
+      --bg: #F3F4F6; /* Soft background */
     }
 
     * {
@@ -67,6 +65,9 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
       .layout {
         grid-template-columns: 1fr;
       }
+      .sidebar{
+        margin-top: 100px;
+      }
     }
 
     .wheel-container {
@@ -82,18 +83,18 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
       border-radius: 50%;
       border: 10px solid var(--dark);
       background: conic-gradient(
-        #3B82F6 0deg 30deg,
-        #F472B6 30deg 60deg,
-        #FACC15 60deg 90deg,
-        #10B981 90deg 120deg,
-        #8B5CF6 120deg 150deg,
-        #EC4899 150deg 180deg,
-        #14B8A6 180deg 210deg,
-        #F97316 210deg 240deg,
-        #6366F1 240deg 270deg,
-        #EF4444 270deg 300deg,
-        #A855F7 300deg 330deg,
-        #22D3EE 330deg 360deg
+        #60A5FA 0deg 30deg, /* Soft blue */
+        #F9A8D4 30deg 60deg, /* Soft pink */
+        #A5B4FC 60deg 90deg, /* Soft purple */
+        #6EE7B7 90deg 120deg, /* Soft green */
+        #C4B5FD 120deg 150deg, /* Soft violet */
+        #FBCFE8 150deg 180deg, /* Softer pink */
+        #5EEAD4 180deg 210deg, /* Soft teal */
+        #FBBF24 210deg 240deg, /* Soft amber */
+        #A5B4FC 240deg 270deg, /* Soft purple */
+        #F9A8D4 270deg 300deg, /* Soft pink */
+        #60A5FA 300deg 330deg, /* Soft blue */
+        #C4B5FD 330deg 360deg /* Soft violet */
       );
       position: relative;
       transition: transform 4s cubic-bezier(0.3, 0.7, 0.2, 1);
@@ -529,7 +530,7 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
 </head>
 <body>
 
- <h1>Wheel of <span>Birthdays</span></h1>
+ <h1>Best <span>Jan. Birthday</span> Wheel</h1>
 
  <!-- Sound control button -->
  <button class="sound-control" id="soundToggle" title="Toggle Sound">🔊</button>
@@ -542,10 +543,10 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
     </div>
 
     <div class="sidebar">
-      <h2>Manage Birthdays</h2>
+      <h2>Manage Jan. Birthdays</h2>
       <div id="monthList"></div>
       <div class="add-form">
-        <input type="text" id="newMonth" placeholder="e.g. 3 May" />
+        <input type="text" id="newMonth" placeholder="e.g. 3 January" />
         <button onclick="addMonth()">Add</button>
       </div>
     </div>
@@ -556,7 +557,7 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
 <div class="modal" id="winnerModal">
   <div class="modal-content">
     <div class="confetti"></div>
-    <h3>🎉 Congratulations! 🎉</h3>
+    <h3>🎉 Best Jan. Birthday! 🎉</h3>
     <p>The wheel landed on: <span id="winnerText"></span></p>
     <button onclick="closeModal()">Awesome!</button>
   </div>
@@ -567,9 +568,9 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
 
 <script>
   let months = [
-    '1 Jan', '3 Feb', '12 Mar', '5 Apr',
-    '9 May', '22 Jun', '14 Jul', '18 Aug',
-    '7 Sep', '20 Oct', '2 Nov', '11 Dec'
+    '1 January', '3 January', '5 January', '7 January',
+    '10 January', '12 January', '15 January', '18 January',
+    '20 January', '22 January', '25 January', '28 January'
   ];
 
   let currentRotation = 0;
@@ -742,7 +743,7 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
     initAudio(); // Initialize audio on first interaction
     
     if (months.length === 0) {
-      alert('Please add at least one birthday!');
+      alert('Please add at least one January birthday!');
       return;
     }
 
@@ -805,6 +806,11 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
     const input = document.getElementById('newMonth');
     const value = input.value.trim();
     if (value && !months.includes(value)) {
+      // Basic validation to ensure input is a January date
+      if (!value.toLowerCase().includes('january')) {
+        alert('Please enter a valid January date (e.g., 3 January)');
+        return;
+      }
       months.push(value);
       input.value = '';
       renderMonthList();
@@ -814,8 +820,13 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
 
   function editMonth(index) {
     initAudio();
-    const newName = prompt('Edit birthday:', months[index]);
+    const newName = prompt('Edit January birthday:', months[index]);
     if (newName && newName.trim() !== '') {
+      // Basic validation to ensure edited input is a January date
+      if (!newName.toLowerCase().includes('january')) {
+        alert('Please enter a valid January date (e.g., 3 January)');
+        return;
+      }
       months[index] = newName.trim();
       renderMonthList();
       playSound('button');
@@ -824,7 +835,7 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
 
   function deleteMonth(index) {
     initAudio();
-    if (confirm('Delete this birthday?')) {
+    if (confirm('Delete this January birthday?')) {
       months.splice(index, 1);
       renderMonthList();
       playSound('delete');
@@ -875,4 +886,3 @@ Do you know about "Best Jan. Birthday" wheel so I need one lucky wheel like this
 
 </body>
 </html>
-" mean you change only the content not change anything else mean I need only a text change this is code is for birthdays but new code is for "Best Jan. Birthday"  
