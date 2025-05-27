@@ -13,6 +13,7 @@
     />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
       :root {
         --blue: #60a5fa;
@@ -41,6 +42,12 @@
         position: relative;
         overflow-x: hidden;
       }
+      
+.tool-heading{
+    font-size: 50px;
+    line-height: 50px;
+
+}
 
       h1 {
         font-family: "Poppins", sans-serif;
@@ -380,11 +387,17 @@
       .animate-ping {
         animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
       }
+      .tagline{
+        width: 50%;
+        margin-top: 20px;
+        text-align: center;
+
+      }
     </style>
   </head>
   <body>
-    <h1>Best <span>Event</span> Wheel</h1>
-
+    <h1  class="tool-heading" >Best <span>Event</span> Wheel</h1>
+      <p class="tagline" >Lorem ipsum dolor sit amet consectetur adipisicing elit. Atque ipsa illum aut nostrum corrupti sunt a similique deleniti consequatur ipsam sit nulla vero iusto animi sequi nobis quidem, quibusdam perferendis.</p>
     <button class="sound-control" id="soundToggle" title="Toggle Sound">
       🔊
     </button>
@@ -911,75 +924,108 @@
       }
 
       // CongratsPopup Component
-      class CongratsPopup {
-        constructor(containerId) {
-          this.container = document.getElementById(containerId);
-          this.isOpen = false;
-          this.month = null;
-          this.messageTemplate =
-            "Hooray! The wheel has chosen **{month}**! May your event be filled with joy and celebrations!";
+     class CongratsPopup {
+  constructor(containerId) {
+    this.container = document.getElementById(containerId);
+    this.isOpen = false;
+    this.month = null;
+    this.messageTemplate =
+      "Hooray! The wheel has chosen **{month}**! May your event be filled with joy and celebrations!";
+  }
+
+  open(month) {
+    this.month = month;
+    this.isOpen = true;
+
+    // Trigger confetti animation
+    if (typeof confetti === 'function') {
+      const duration = 3 * 1000; // 3 seconds
+      const end = Date.now() + duration;
+
+      const colors = ['#60a5fa', '#f9a8d4', '#6ee7b7', '#FF6B6B', '#FFD166', '#06D6A0']; // Match theme colors
+
+      (function frame() {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.6 },
+          colors: colors,
+          zIndex: 100,
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.6 },
+          colors: colors,
+          zIndex: 100,
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
         }
+      })();
+    } else {
+      console.warn("Confetti library not loaded");
+    }
 
-        open(month) {
-          this.month = month;
-          this.isOpen = true;
-          this.render();
-        }
+    this.render();
+  }
 
-        close() {
-          this.isOpen = false;
-          this.render();
-        }
+  close() {
+    this.isOpen = false;
+    this.render();
+  }
 
-        render() {
-          if (!this.isOpen || !this.month) {
-            this.container.innerHTML = "";
-            return;
-          }
+  render() {
+    if (!this.isOpen || !this.month) {
+      this.container.innerHTML = "";
+      return;
+    }
 
-          const messageParts = this.messageTemplate.split("{month}");
+    const messageParts = this.messageTemplate.split("{month}");
 
-          const popupHTML = `
-                <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-md w-full">
-                        <div class="relative h-48 w-full">
-                            <img src="https://placehold.co/600x300/A64AC9/FFFFFF.png?text=Celebration!" alt="Celebration background" class="w-full h-full object-cover" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center p-6">
-                                <i data-lucide="party-popper" class="h-16 w-16 text-white opacity-80 drop-shadow-lg animate-pulse"></i>
-                            </div>
-                        </div>
-                        <div class="p-6 text-center">
-                            <h3 class="text-3xl font-bold text-purple-600 flex items-center justify-center">
-                                <i data-lucide="gift" class="h-8 w-8 mr-3 text-purple-500"></i>
-                                Congratulations!
-                            </h3>
-                            <p class="text-lg text-gray-600 mt-4">
-                                ${messageParts[0]}
-                                <strong class="text-purple-500 font-semibold">${this.month}</strong>
-                                ${messageParts[1]}
-                            </p>
-                        </div>
-                        <div class="p-6 pt-4 bg-transparent">
-                            <button id="close-popup" class="w-full bg-purple-500 hover:bg-purple-500/90 text-white text-lg py-3 rounded-md">
-                                Awesome!
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
+    const popupHTML = `
+      <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-md w-full">
+          <div class="relative h-48 w-full">
+            <img src="https://placehold.co/600x300/A64AC9/FFFFFF.png?text=Celebration!" alt="Celebration background" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center p-6">
+              <i data-lucide="party-popper" class="h-16 w-16 text-white opacity-80 drop-shadow-lg animate-pulse"></i>
+            </div>
+          </div>
+          <div class="p-6 text-center">
+            <h3 class="text-3xl font-bold text-purple-600 flex items-center justify-center">
+              <i data-lucide="gift" class="h-8 w-8 mr-3 text-purple-500"></i>
+              Congratulations!
+            </h3>
+            <p class="text-lg text-gray-600 mt-4">
+              ${messageParts[0]}
+              <strong class="text-purple-500 font-semibold">${this.month}</strong>
+              ${messageParts[1]}
+            </p>
+          </div>
+          <div class="p-6 pt-4 bg-transparent">
+            <button id="close-popup" class="w-full bg-purple-500 hover:bg-purple-500/90 text-white text-lg py-3 rounded-md">
+              Awesome!
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
 
-          this.container.innerHTML = popupHTML;
-          document
-            .getElementById("close-popup")
-            .addEventListener("click", () => {
-              initAudio();
-              this.close();
-              playSound("button");
-            });
-          lucide.createIcons();
-        }
-      }
-
+    this.container.innerHTML = popupHTML;
+    document
+      .getElementById("close-popup")
+      .addEventListener("click", () => {
+        initAudio();
+        this.close();
+        playSound("button");
+      });
+    lucide.createIcons();
+  }
+}
       // Initialize the app
       document.addEventListener("DOMContentLoaded", () => {
         lucide.createIcons();
