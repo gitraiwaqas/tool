@@ -1,11 +1,9 @@
-Do you know about "Elf Names" wheel so I need one lucky wheel like this "https://spinthewheel.app/elf-names" in this wheel but my styling as well as color scheme as well as font and sounds effect like this "
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Birthday Wheel</title>
+  <title>Elf Names Wheel</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -208,7 +206,7 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
       font-family: 'Poppins', sans-serif;
     }
 
-    .month-item {
+    .name-item {
       border-radius: 8px;
       padding: 0.8rem 1rem;
       display: flex;
@@ -218,12 +216,12 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
       transition: all 0.2s ease;
     }
 
-    .month-item:hover {
+    .name-item:hover {
       background-color: var(--gray);
       transform: translateX(5px);
     }
 
-    .month-actions button {
+    .name-actions button {
       background: none;
       border: none;
       font-size: 1rem;
@@ -234,7 +232,7 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
       transition: all 0.2s ease;
     }
 
-    .month-actions button:hover {
+    .name-actions button:hover {
       background-color: var(--blue);
       color: white;
       transform: scale(1.1);
@@ -529,7 +527,7 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
 </head>
 <body>
 
- <h1>Wheel of <span>Birthdays</span></h1>
+ <h1>Wheel of <span>Elf Names</span></h1>
 
  <!-- Sound control button -->
  <button class="sound-control" id="soundToggle" title="Toggle Sound">🔊</button>
@@ -542,11 +540,11 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
     </div>
 
     <div class="sidebar">
-      <h2>Manage Birthdays</h2>
-      <div id="monthList"></div>
+      <h2>Manage Elf Names</h2>
+      <div id="nameList"></div>
       <div class="add-form">
-        <input type="text" id="newMonth" placeholder="e.g. 3 May" />
-        <button onclick="addMonth()">Add</button>
+        <input type="text" id="newName" placeholder="e.g. Elrond" />
+        <button onclick="addName()">Add</button>
       </div>
     </div>
   </div>
@@ -566,10 +564,10 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
 <div class="full-confetti" id="fullConfetti"></div>
 
 <script>
-  let months = [
-    '1 Jan', '3 Feb', '12 Mar', '5 Apr',
-    '9 May', '22 Jun', '14 Jul', '18 Aug',
-    '7 Sep', '20 Oct', '2 Nov', '11 Dec'
+  let names = [
+    'Elrond', 'Galadriel', 'Legolas', 'Arwen',
+    'Thranduil', 'Celeborn', 'Eldrin', 'Liora',
+    'Faelar', 'Aeloria', 'Thalindra', 'Eldrin'
   ];
 
   let currentRotation = 0;
@@ -581,7 +579,7 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
 
   const wheel = document.getElementById('wheel');
   const spinBtn = document.getElementById('spinBtn');
-  const monthList = document.getElementById('monthList');
+  const nameList = document.getElementById('nameList');
   const winnerModal = document.getElementById('winnerModal');
   const winnerText = document.getElementById('winnerText');
   const fullConfetti = document.getElementById('fullConfetti');
@@ -694,9 +692,9 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
   function renderWheel() {
     wheel.querySelectorAll('.wheel-label').forEach(e => e.remove());
 
-    const segmentAngle = 360 / months.length;
+    const segmentAngle = 360 / names.length;
 
-    months.forEach((entry, index) => {
+    names.forEach((entry, index) => {
       const label = document.createElement('div');
       label.className = 'wheel-label';
       label.style.transform = `rotate(${index * segmentAngle}deg)`;
@@ -705,26 +703,26 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
     });
   }
 
-  function renderMonthList() {
-    monthList.innerHTML = '';
-    months.forEach((entry, index) => {
+  function renderNameList() {
+    nameList.innerHTML = '';
+    names.forEach((entry, index) => {
       const div = document.createElement('div');
-      div.className = 'month-item';
+      div.className = 'name-item';
 
       const name = document.createElement('span');
       name.textContent = entry;
 
       const actions = document.createElement('div');
-      actions.className = 'month-actions';
+      actions.className = 'name-actions';
 
       const editBtn = document.createElement('button');
       editBtn.textContent = '✎';
-      editBtn.onclick = () => editMonth(index);
+      editBtn.onclick = () => editName(index);
       editBtn.onmouseenter = () => playSound('hover');
 
       const deleteBtn = document.createElement('button');
       deleteBtn.textContent = '🗑';
-      deleteBtn.onclick = () => deleteMonth(index);
+      deleteBtn.onclick = () => deleteName(index);
       deleteBtn.onmouseenter = () => playSound('hover');
 
       actions.appendChild(editBtn);
@@ -732,7 +730,7 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
 
       div.appendChild(name);
       div.appendChild(actions);
-      monthList.appendChild(div);
+      nameList.appendChild(div);
     });
 
     renderWheel();
@@ -741,8 +739,8 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
   function spinWheel() {
     initAudio(); // Initialize audio on first interaction
     
-    if (months.length === 0) {
-      alert('Please add at least one birthday!');
+    if (names.length === 0) {
+      alert('Please add at least one elf name!');
       return;
     }
 
@@ -752,7 +750,7 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
     // Play spinning sound
     playSpinningSound();
 
-    const segmentAngle = 360 / months.length;
+    const segmentAngle = 360 / names.length;
     const offset = segmentAngle / 2 + 45;
 
     const spinDegrees = (5 * 360) + Math.floor(Math.random() * 360);
@@ -764,9 +762,9 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
     setTimeout(() => {
       const normalizedRotation = currentRotation % 360;
       const pointedAngle = (normalizedRotation + 45) % 360;
-      const winnerIndex = Math.floor(pointedAngle / segmentAngle) % months.length;
+      const winnerIndex = Math.floor(pointedAngle / segmentAngle) % names.length;
 
-      showWinner(months[winnerIndex]);
+      showWinner(names[winnerIndex]);
       spinBtn.disabled = false;
       spinBtn.classList.remove('spinning');
     }, 4000);
@@ -800,33 +798,33 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
     fullConfetti.classList.remove('show');
   }
 
-  function addMonth() {
+  function addName() {
     initAudio();
-    const input = document.getElementById('newMonth');
+    const input = document.getElementById('newName');
     const value = input.value.trim();
-    if (value && !months.includes(value)) {
-      months.push(value);
+    if (value && !names.includes(value)) {
+      names.push(value);
       input.value = '';
-      renderMonthList();
+      renderNameList();
       playSound('add');
     }
   }
 
-  function editMonth(index) {
+  function editName(index) {
     initAudio();
-    const newName = prompt('Edit birthday:', months[index]);
+    const newName = prompt('Edit elf name:', names[index]);
     if (newName && newName.trim() !== '') {
-      months[index] = newName.trim();
-      renderMonthList();
+      names[index] = newName.trim();
+      renderNameList();
       playSound('button');
     }
   }
 
-  function deleteMonth(index) {
+  function deleteName(index) {
     initAudio();
-    if (confirm('Delete this birthday?')) {
-      months.splice(index, 1);
-      renderMonthList();
+    if (confirm('Delete this elf name?')) {
+      names.splice(index, 1);
+      renderNameList();
       playSound('delete');
     }
   }
@@ -853,26 +851,25 @@ Do you know about "Elf Names" wheel so I need one lucky wheel like this "https:/
   }
 
   // Add enter key support for input
-  document.getElementById('newMonth').addEventListener('keypress', function(e) {
+  document.getElementById('newName').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
-      addMonth();
+      addName();
     }
   });
 
   // Initialize
-  renderMonthList();
+  renderNameList();
   addHoverSounds();
   spinBtn.addEventListener('click', spinWheel);
   soundToggle.addEventListener('click', toggleSound);
 
-  // Re-add hover sounds when month list is re-rendered
-  const originalRenderMonthList = renderMonthList;
-  renderMonthList = function() {
-    originalRenderMonthList();
+  // Re-add hover sounds when name list is re-rendered
+  const originalRenderNameList = renderNameList;
+  renderNameList = function() {
+    originalRenderNameList();
     setTimeout(addHoverSounds, 0);
   };
 </script>
 
 </body>
 </html>
-" mean you change only the content not change anything else mean I need only a text change this is code is for birthdays but new code is for "Elf Names"  

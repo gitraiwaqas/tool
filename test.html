@@ -1,11 +1,533 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    Hello, Waqas Rai ////
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Birthday Wheel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="font-inter bg-gray-50 text-gray-800 py-8 flex flex-col items-center min-h-screen relative">
+  <h1 class="font-poppins text-5xl mb-8 text-blue-500 text-center font-extrabold tracking-tight shadow-sm">Wheel of <span class="text-pink-500">Birthdays</span></h1>
+
+  <!-- Sound control button -->
+  <button class="sound-control fixed top-5 right-5 bg-blue-500 text-white border-none rounded-full w-12 h-12 cursor-pointer text-xl transition-transform duration-300 shadow-lg hover:scale-110 hover:bg-green-500 z-50" id="soundToggle" title="Toggle Sound">🔊</button>
+
+  <div class="card p-8 rounded-3xl w-11/12 max-w-7xl">
+    <div class="grid grid-cols-3 gap-8 md:grid-cols-1">
+      <div class="wheel-container flex flex-col items-center relative">
+        <div class="wheel w-[min(90vw,540px)] h-[min(90vw,540px)] rounded-full border-[10px] border-gray-800 bg-[conic-gradient(#3B82F6_0deg_30deg,#F472B6_30deg_60deg,#FACC15_60deg_90deg,#10B981_90deg_120deg,#8B5CF6_120deg_150deg,#EC4899_150deg_180deg,#14B8A6_180deg_210deg,#F97316_210deg_240deg,#6366F1_240deg_270deg,#EF4444_270deg_300deg,#A855F7_300deg_330deg,#22D3EE_330deg_360deg)] relative transition-transform duration-[4s] ease-[cubic-bezier(0.3,0.7,0.2,1)] shadow-2xl" id="wheel"></div>
+        <button id="spinBtn" class="spin-btn absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent z-30 transition-transform duration-300 hover:scale-110 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100">
+          <span class="relative z-10 text-white font-bold text-xs tracking-wide flex items-center justify-center w-full h-full pointer-events-none">SPIN</span>
+        </button>
+      </div>
+
+      <div class="sidebar max-h-[min(90vw,400px)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+        <h2 class="text-2xl mb-4 text-blue-500 font-poppins">Manage Birthdays</h2>
+        <div id="monthList"></div>
+        <div class="add-form flex gap-2 mt-4">
+          <input type="text" id="newMonth" placeholder="e.g. 3 May" class="flex-1 p-3 rounded-xl border-2 border-blue-500 bg-gradient-to-br from-gray-50 to-white font-inter text-base text-gray-800 transition-all duration-300 shadow-md focus:outline-none focus:border-green-500 focus:shadow-lg focus:-translate-y-0.5 hover:bg-gradient-to-br hover:from-gray-200 hover:to-white" />
+          <button onclick="addMonth()" class="bg-green-500 text-white border-none p-3 rounded-lg cursor-pointer font-semibold transition-all duration-200 hover:bg-blue-500 hover:-translate-y-0.5 hover:shadow-lg">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[999] backdrop-blur-sm" id="winnerModal">
+    <div class="modal-content bg-gradient-to-br from-white to-cyan-50 p-10 rounded-3xl shadow-2xl text-center relative overflow-hidden transform scale-90 animate-popIn max-w-md w-11/12">
+      <div class="confetti absolute inset-0 pointer-events-none z-0 overflow-hidden"></div>
+      <h3 class="text-3xl font-poppins text-pink-500 mb-4 animate-bounce">🎉 Congratulations! 🎉</h3>
+      <p class="text-xl font-medium text-gray-800 mb-6">The wheel landed on: <span id="winnerText"></span></p>
+      <button onclick="closeModal()" class="bg-gradient-to-r from-blue-500 to-green-500 text-white border-none p-3 rounded-lg font-semibold font-inter cursor-pointer transition-all duration-300 shadow-md hover:-translate-y-0.5 hover:shadow-lg">Awesome!</button>
+    </div>
+  </div>
+
+  <!-- Full-page confetti layer -->
+  <div class="full-confetti hidden fixed inset-0 pointer-events-none z-[998]" id="fullConfetti"></div>
+
+  <script>
+    let months = [
+      '1 Jan', '3 Feb', '12 Mar', '5 Apr',
+      '9 May', '22 Jun', '14 Jul', '18 Aug',
+      '7 Sep', '20 Oct', '2 Nov', '11 Dec'
+    ];
+
+    let currentRotation = 0;
+    let soundEnabled = true;
+
+    // Audio context and sound generation
+    let audioContext;
+    let isAudioInitialized = false;
+
+    const wheel = document.getElementById('wheel');
+    const spinBtn = document.getElementById('spinBtn');
+    const monthList = document.getElementById('monthList');
+    const winnerModal = document.getElementById('winnerModal');
+    const winnerText = document.getElementById('winnerText');
+    const fullConfetti = document.getElementById('fullConfetti');
+    const soundToggle = document.getElementById('soundToggle');
+
+    // Predefined sound frequencies for common UI sounds
+    const sounds = {
+      button: { type: 'square', frequency: 800, duration: 0.1, volume: 0.2 },
+      hover: { type: 'sine', frequency: 1200, duration: 0.05, volume: 0.1 },
+      spin: { type: 'sawtooth', frequency: 300, duration: 1.5, volume: 0.15, endFrequency: 100 },
+      tick: { type: 'square', frequency: 1000, duration: 0.05, volume: 0.1 },
+      winner: { type: 'sine', frequency: 1047, duration: 0.5, volume: 0.2 },
+      add: { type: 'triangle', frequency: 523, duration: 0.2, volume: 0.15 },
+      delete: { type: 'sine', frequency: 200, duration: 0.3, volume: 0.15 }
+    };
+
+    // Initialize audio context on first user interaction
+    function initAudio() {
+      if (!isAudioInitialized && soundEnabled) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        isAudioInitialized = true;
+      }
+    }
+
+    // Play sound based on type
+    function playSound(type) {
+      if (!soundEnabled || !isAudioInitialized) return;
+      
+      const sound = sounds[type];
+      if (!sound) return;
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.type = sound.type;
+      oscillator.frequency.setValueAtTime(sound.frequency, audioContext.currentTime);
+      
+      if (sound.endFrequency) {
+        oscillator.frequency.exponentialRampToValueAtTime(
+          sound.endFrequency, 
+          audioContext.currentTime + sound.duration
+        );
+      }
+      
+      gainNode.gain.setValueAtTime(sound.volume, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001, 
+        audioContext.currentTime + sound.duration
+      );
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + sound.duration);
+    }
+
+    // Play a sequence of notes for the winner sound
+    function playWinnerSound() {
+      if (!soundEnabled || !isAudioInitialized) return;
+      
+      const notes = [
+        { frequency: 784, duration: 0.2 },  // G5
+        { frequency: 880, duration: 0.2 },  // A5
+        { frequency: 1047, duration: 0.4 }  // C6
+      ];
+      
+      let time = audioContext.currentTime;
+      
+      notes.forEach((note, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(note.frequency, time);
+        
+        gainNode.gain.setValueAtTime(0.2, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + note.duration);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start(time);
+        oscillator.stop(time + note.duration);
+        
+        time += note.duration * 0.8; // Slight overlap
+      });
+    }
+
+    // Play spinning sound with ticking
+    function playSpinningSound() {
+      if (!soundEnabled || !isAudioInitialized) return;
+      
+      // Initial spin sound
+      playSound('spin');
+      
+      // Ticking sounds during spin
+      let tickCount = 0;
+      const maxTicks = 20;
+      const tickInterval = setInterval(() => {
+        if (tickCount < maxTicks && soundEnabled) {
+          playSound('tick');
+          tickCount++;
+        } else {
+          clearInterval(tickInterval);
+        }
+      }, 200);
+    }
+
+    function renderWheel() {
+      wheel.querySelectorAll('.wheel-label').forEach(e => e.remove());
+
+      const segmentAngle = 360 / months.length;
+
+      months.forEach((entry, index) => {
+        const label = document.createElement('div');
+        label.className = 'wheel-label absolute w-full h-full top-0 left-0 text-center font-bold text-xs text-white pointer-events-none';
+        label.style.transform = `rotate(${index * segmentAngle}deg)`;
+        label.innerHTML = `<span class="absolute left-1/2 top-4 transform -translate-x-1/2 rotate-90 origin-left text-shadow-md">${entry}</span>`;
+        wheel.appendChild(label);
+      });
+    }
+
+    function renderMonthList() {
+      monthList.innerHTML = '';
+      months.forEach((entry, index) => {
+        const div = document.createElement('div');
+        div.className = 'month-item rounded-lg p-3 flex justify-between items-center mb-2 transition-all duration-200 hover:bg-gray-200 hover:transform hover:translate-x-1';
+
+        const name = document.createElement('span');
+        name.textContent = entry;
+
+        const actions = document.createElement('div');
+        actions.className = 'month-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.textContent = '✎';
+        editBtn.className = 'bg-transparent border-none text-base cursor-pointer ml-1 p-1 rounded transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110';
+        editBtn.onclick = () => editMonth(index);
+        editBtn.onmouseenter = () => playSound('hover');
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '🗑';
+        deleteBtn.className = 'bg-transparent border-none text-base cursor-pointer ml-1 p-1 rounded transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110';
+        deleteBtn.onclick = () => deleteMonth(index);
+        deleteBtn.onmouseenter = () => playSound('hover');
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        div.appendChild(name);
+        div.appendChild(actions);
+        monthList.appendChild(div);
+      });
+
+      renderWheel();
+    }
+
+    function spinWheel() {
+      initAudio(); // Initialize audio on first interaction
+      
+      if (months.length === 0) {
+        alert('Please add at least one birthday!');
+        return;
+      }
+
+      spinBtn.disabled = true;
+      spinBtn.classList.add('spinning');
+
+      // Play spinning sound
+      playSpinningSound();
+
+      const segmentAngle = 360 / months.length;
+      const offset = segmentAngle / 2 + 45;
+
+      const spinDegrees = (5 * 360) + Math.floor(Math.random() * 360);
+      currentRotation += spinDegrees;
+
+      wheel.style.transition = 'transform 4s cubic-bezier(0.3, 0.7, 0.2, 1)';
+      wheel.style.transform = `rotate(-${currentRotation}deg)`;
+
+      setTimeout(() => {
+        const normalizedRotation = currentRotation % 360;
+        const pointedAngle = (normalizedRotation + 45) % 360;
+        const winnerIndex = Math.floor(pointedAngle / segmentAngle) % months.length;
+
+        showWinner(months[winnerIndex]);
+        spinBtn.disabled = false;
+        spinBtn.classList.remove('spinning');
+      }, 4000);
+    }
+
+    function showWinner(text) {
+      winnerText.textContent = text;
+      winnerModal.classList.add('show');
+      fullConfetti.classList.add('show');
+
+      // Play victory sound
+      setTimeout(() => playWinnerSound(), 100);
+
+      const modalConfetti = document.querySelector('.confetti');
+      modalConfetti.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const confettiPiece = document.createElement('div');
+        modalConfetti.appendChild(confettiPiece);
+      }
+
+      fullConfetti.innerHTML = '';
+      for (let i = 0; i < 5; i++) {
+        const confettiPiece = document.createElement('div');
+        fullConfetti.appendChild(confettiPiece);
+      }
+    }
+
+    function closeModal() {
+      playSound('button');
+      winnerModal.classList.remove('show');
+      fullConfetti.classList.remove('show');
+    }
+
+    function addMonth() {
+      initAudio();
+      const input = document.getElementById('newMonth');
+      const value = input.value.trim();
+      if (value && !months.includes(value)) {
+        months.push(value);
+        input.value = '';
+        renderMonthList();
+        playSound('add');
+      }
+    }
+
+    function editMonth(index) {
+      initAudio();
+      const newName = prompt('Edit birthday:', months[index]);
+      if (newName && newName.trim() !== '') {
+        months[index] = newName.trim();
+        renderMonthList();
+        playSound('button');
+      }
+    }
+
+    function deleteMonth(index) {
+      initAudio();
+      if (confirm('Delete this birthday?')) {
+        months.splice(index, 1);
+        renderMonthList();
+        playSound('delete');
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+      soundToggle.classList.toggle('muted', !soundEnabled);
+      soundToggle.title = soundEnabled ? 'Mute Sound' : 'Enable Sound';
+      
+      if (soundEnabled) {
+        playSound('button');
+      }
+    }
+
+    // Add hover sound effects to buttons
+    function addHoverSounds() {
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(button => {
+        if (!button.onmouseenter) {
+          button.addEventListener('mouseenter', () => playSound('hover'));
+        }
+      });
+    }
+
+    // Add enter key support for input
+    document.getElementById('newMonth').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        addMonth();
+      }
+    });
+
+    // Initialize
+    renderMonthList();
+    addHoverSounds();
+    spinBtn.addEventListener('click', spinWheel);
+    soundToggle.addEventListener('click', toggleSound);
+
+    // Re-add hover sounds when month list is re-rendered
+    const originalRenderMonthList = renderMonthList;
+    renderMonthList = function() {
+      originalRenderMonthList();
+      setTimeout(addHoverSounds, 0);
+    };
+  </script>
+
+  <style>
+    /* Custom styles for elements that TailwindCSS cannot fully replicate */
+    :root {
+      --blue: #3b82f6;
+      --pink: #ec4899;
+      --green: #10b981;
+      --gray: #f3f4f6;
+      --dark: #1f2937;
+      --bg: #f9fafb;
+    }
+
+    .spin-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50% 0px 50% 50%;
+      transform: rotate(-45deg);
+      background: rgb(34, 34, 34);
+      z-index: 2;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--gray);
+      border-radius: 10px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: var(--dark);
+    }
+
+    .confetti::before,
+    .confetti::after,
+    .confetti > div,
+    .full-confetti > div {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: confettiFall 3s infinite linear;
+    }
+
+    .confetti::before {
+      left: 20%;
+      background: var(--blue);
+      animation-delay: 0.2s;
+    }
+
+    .confetti::after {
+      left: 40%;
+      background: var(--green);
+      animation-delay: 0.4s;
+    }
+
+    .confetti > div:nth-child(1) {
+      left: 60%;
+      background: var(--pink);
+      animation-delay: 0.6s;
+    }
+
+    .confetti > div:nth-child(2) {
+      left: 80%;
+      background: var(--blue);
+      animation-delay: 0.8s;
+    }
+
+    .confetti > div:nth-child(3) {
+      left: 30%;
+      background: var(--green);
+      animation-delay: 1s;
+    }
+
+    .full-confetti > div:nth-child(1) {
+      left: 10%;
+      top: -20px;
+      background: var(--pink);
+      animation-delay: 0s;
+    }
+
+    .full-confetti > div:nth-child(2) {
+      left: 30%;
+      top: -30px;
+      background: var(--blue);
+      animation-delay: 0.2s;
+    }
+
+    .full-confetti > div:nth-child(3) {
+      left: 50%;
+      top: -10px;
+      background: var(--green);
+      animation-delay: 0.4s;
+    }
+
+    .full-confetti > div:nth-child(4) {
+      left: 70%;
+      top: -25px;
+      background: var(--pink);
+      animation-delay: 0.6s;
+    }
+
+    .full-confetti > div:nth-child(5) {
+      left: 90%;
+      top: -15px;
+      background: var(--blue);
+      animation-delay: 0.8s;
+    }
+
+    .text-shadow-md {
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    }
+
+    .animate-popIn {
+      animation: popIn 0.4s ease-out forwards;
+    }
+
+    .animate-bounce {
+      animation: bounce 0.6s ease-in-out;
+    }
+
+    .animate-pulse {
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    .modal.show {
+      animation: fadeIn 0.5s ease-in-out;
+      display: flex;
+    }
+
+    .full-confetti.show {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100%) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</body>
 </html>
