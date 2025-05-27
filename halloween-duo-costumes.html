@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Halloween Duo Costumes Wheel</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --blue: #3b82f6;
+        --pink: #ec4899;
+        --green: #10b981;
+        --gray: #f3f4f6;
+        --dark: #1f2937;
+        --bg: #f9fafb;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg);
+        color: var(--dark);
+        padding: 2rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        position: relative;
+      }
+
+      h1 {
+        font-family: "Poppins", sans-serif;
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        color: var(--blue);
+        text-align: center;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        letter-spacing: -0.5px;
+      }
+
+      h1 span {
+        color: var(--pink);
+      }
+
+      .card {
+        padding: 2rem;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 1400px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+      }
+
+      @media (max-width: 768px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .wheel-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+      }
+
+      .wheel {
+        width: min(90vw, 540px);
+        height: min(90vw, 540px);
+        border-radius: 50%;
+        border: 10px solid var(--dark);
+        background: conic-gradient(
+          #3b82f6 0deg 30deg,
+          #f472b6 30deg 60deg,
+          #facc15 60deg 90deg,
+          #10b981 90deg 120deg,
+          #8b5cf6 120deg 150deg,
+          #ec4899 150deg 180deg,
+          #14b8a6 180deg 210deg,
+          #f97316 210deg 240deg,
+          #6366f1 240deg 270deg,
+          #ef4444 270deg 300deg,
+          #a855f7 300deg 330deg,
+          #22d3ee 330deg 360deg
+        );
+        position: relative;
+        transition: transform 4s cubic-bezier(0.3, 0.7, 0.2, 1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .wheel-label {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        text-align: center;
+        font-weight: bold;
+        font-size: 12px;
+        color: white;
+        pointer-events: none;
+      }
+
+      .wheel-label span {
+        position: absolute;
+        left: 50%;
+        top: 18px;
+        transform: translateX(-50%) rotate(90deg);
+        transform-origin: left center;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+      }
+
+      .spin-btn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 80px;
+        height: 80px;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        z-index: 30;
+        transition: transform 0.3s ease;
+      }
+      
+      .spin-btn:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+
+      .spin-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .spin-btn:disabled:hover {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      .spin-btn::before {
+        content: "";
+        position: absolute;
+        inset: 0px;
+        width: 80px;
+        height: 80px;
+        border-radius: 50% 0px 50% 50%;
+        transform: rotate(-45deg);
+        background: rgb(34, 34, 34);
+        z-index: 2;
+      }
+
+      .spin-btn span {
+        position: relative;
+        z-index: 3;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .sidebar {
+        max-height: min(90vw, 400px);
+        overflow-y: auto;
+        padding-right: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gray) transparent;
+      }
+
+      .sidebar::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb {
+        background: var(--gray);
+        border-radius: 10px;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb:hover {
+        background: var(--dark);
+      }
+
+      .sidebar h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--blue);
+        font-family: "Poppins", sans-serif;
+      }
+
+      .month-item {
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s ease;
+      }
+      
+      .month-item:hover {
+        background-color: var(--gray);
+        transform: translateX(5px);
+      }
+
+      .month-actions button {
+        background: none;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-left: 0.3rem;
+        padding: 5px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .month-actions button:hover {
+        background-color: var(--blue);
+        color: white;
+        transform: scale(1.1);
+      }
+
+      .add-form {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .add-form input {
+        flex: 1;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: 2px solid var(--blue);
+        background: linear-gradient(135deg, var(--bg), #ffffff);
+        font-family: "Inter", sans-serif;
+        font-size: 1rem;
+        color: var(--dark);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+      }
+
+      .add-form input:focus {
+        outline: none;
+        border-color: var(--green);
+        box-shadow: 0 6px 15px rgba(16, 185, 129, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .add-form input::placeholder {
+        color: var(--gray);
+        font-weight: 500;
+        opacity: 0.8;
+      }
+
+      .add-form input:hover {
+        background: linear-gradient(135deg, #f3f4f6, #ffffff);
+      }
+
+      .add-form button {
+        background-color: var(--green);
+        color: white;
+        border: none;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+
+      .add-form button:hover {
+        background-color: var(--blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        backdrop-filter: blur(5px);
+      }
+
+      .modal.show {
+        display: flex;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      .modal-content {
+        background: linear-gradient(135deg, #ffffff, #e0f7fa);
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3),
+          0 0 20px rgba(59, 130, 246, 0.3);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transform: scale(0.9);
+        animation: popIn 0.4s ease-out forwards;
+        max-width: 400px;
+        width: 90%;
+      }
+
+      .modal-content h3 {
+        font-size: 2rem;
+        font-family: "Poppins", sans-serif;
+        color: var(--pink);
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        animation: bounce 0.6s ease-in-out;
+      }
+
+      .modal-content p {
+        font-size: 1.3rem;
+        font-weight: 500;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+      }
+
+      .modal-content button {
+        background: linear-gradient(90deg, var(--blue), var(--green));
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-family: "Inter", sans-serif;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+      }
+
+      .modal-content button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+      }
+
+      .modal-content .confetti {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .full-confetti {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 998;
+        display: none;
+      }
+
+      .full-confetti.show {
+        display: block;
+      }
+
+      .confetti::before,
+      .confetti::after,
+      .confetti > div,
+      .full-confetti > div {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        animation: confettiFall 3s infinite linear;
+      }
+
+      .confetti::before {
+        left: 20%;
+        background: var(--blue);
+        animation-delay: 0.2s;
+      }
+
+      .confetti::after {
+        left: 40%;
+        background: var(--green);
+        animation-delay: 0.4s;
+      }
+
+      .confetti > div:nth-child(1) {
+        left: 60%;
+        background: var(--pink);
+        animation-delay: 0.6s;
+      }
+
+      .confetti > div:nth-child(2) {
+        left: 80%;
+        background: var(--blue);
+        animation-delay: 0.8s;
+      }
+
+      .confetti > div:nth-child(3) {
+        left: 30%;
+        background: var(--green);
+        animation-delay: 1s;
+      }
+
+      .full-confetti > div:nth-child(1) {
+        left: 10%;
+        top: -20px;
+        background: var(--pink);
+        animation-delay: 0s;
+      }
+
+      .full-confetti > div:nth-child(2) {
+        left: 30%;
+        top: -30px;
+        background: var(--blue);
+        animation-delay: 0.2s;
+      }
+
+      .full-confetti > div:nth-child(3) {
+        left: 50%;
+        top: -10px;
+        background: var(--green);
+        animation-delay: 0.4s;
+      }
+
+      .full-confetti > div:nth-child(4) {
+        left: 70%;
+        top: -25px;
+        background: var(--pink);
+        animation-delay: 0.6s;
+      }
+
+      .full-confetti > div:nth-child(5) {
+        left: 90%;
+        top: -15px;
+        background: var(--blue);
+        animation-delay: 0.8s;
+      }
+
+      /* Sound control button */
+      .sound-control {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--blue);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        z-index: 1000;
+      }
+
+      .sound-control:hover {
+        transform: scale(1.1);
+        background: var(--green);
+      }
+
+      .sound-control.muted {
+        background: var(--gray);
+        color: var(--dark);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes popIn {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes confettiFall {
+        0% {
+          transform: translateY(-100%) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(720deg);
+          opacity: 0;
+        }
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+
+      .spinning {
+        animation: pulse 0.5s ease-in-out;
+      }
+
+      .deleteBtn {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Halloween <span>Duo Costumes</span> 👯‍♀️</h1>
+
+    <!-- Sound control button -->
+    <button class="sound-control" id="soundToggle" title="Toggle Sound">🔊</button>
+
+    <div class="card">
+      <div class="layout">
+        <div class="wheel-container">
+          <div class="wheel" id="wheel"></div>
+          <button id="spinBtn" class="spin-btn"><span>SPIN</span></button>
+        </div>
+
+        <div class="sidebar">
+          <h2>Manage Costumes</h2>
+          <div id="monthList"></div>
+          <div class="add-form">
+            <input type="text" id="newMonth" placeholder="e.g. Witch & Warlock" />
+            <button onclick="addMonth()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="winnerModal">
+      <div class="modal-content">
+        <div class="confetti"></div>
+        <h3>🎃 Spooky Selection! 🎃</h3>
+        <p>Your duo costume is: <span id="winnerText"></span></p>
+        <button onclick="closeModal()">Awesome!</button>
+      </div>
+    </div>
+
+    <!-- Full-page confetti layer -->
+    <div class="full-confetti" id="fullConfetti"></div>
+
+    <script>
+      let months = [
+        "Witch & Warlock",
+        "Vampire & Victim",
+        "Ghost & Ghoul",
+        "Skeleton & Zombie",
+        "Frankenstein & Bride",
+        "Mummy & Pharaoh",
+        "Pumpkin & Scarecrow",
+        "Devil & Angel",
+        "Werewolf & Hunter",
+        "Clown & Ringmaster",
+        "Pirate & Mermaid",
+        "Bat & Cat",
+      ];
+
+      let currentRotation = 0;
+      let soundEnabled = true;
+
+      // Audio context and sound generation
+      let audioContext;
+      let isAudioInitialized = false;
+
+      const wheel = document.getElementById("wheel");
+      const spinBtn = document.getElementById("spinBtn");
+      const monthList = document.getElementById("monthList");
+      const winnerModal = document.getElementById("winnerModal");
+      const winnerText = document.getElementById("winnerText");
+      const fullConfetti = document.getElementById("fullConfetti");
+      const soundToggle = document.getElementById("soundToggle");
+
+      // Predefined sound frequencies for common UI sounds
+      const sounds = {
+        button: { type: 'square', frequency: 800, duration: 0.1, volume: 0.2 },
+        hover: { type: 'sine', frequency: 1200, duration: 0.05, volume: 0.1 },
+        spin: { type: 'sawtooth', frequency: 300, duration: 1.5, volume: 0.15, endFrequency: 100 },
+        tick: { type: 'square', frequency: 1000, duration: 0.05, volume: 0.1 },
+        winner: { type: 'sine', frequency: 1047, duration: 0.5, volume: 0.2 },
+        add: { type: 'triangle', frequency: 523, duration: 0.2, volume: 0.15 },
+        delete: { type: 'sine', frequency: 200, duration: 0.3, volume: 0.15 }
+      };
+
+      // Initialize audio context on first user interaction
+      function initAudio() {
+        if (!isAudioInitialized && soundEnabled) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          isAudioInitialized = true;
+        }
+      }
+
+      // Play sound based on type
+      function playSound(type) {
+        if (!soundEnabled || !isAudioInitialized) return;
+        
+        const sound = sounds[type];
+        if (!sound) return;
+
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.type = sound.type;
+        oscillator.frequency.setValueAtTime(sound.frequency, audioContext.currentTime);
+        
+        if (sound.endFrequency) {
+          oscillator.frequency.exponentialRampToValueAtTime(
+            sound.endFrequency, 
+            audioContext.currentTime + sound.duration
+          );
+        }
+        
+        gainNode.gain.setValueAtTime(sound.volume, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.001, 
+          audioContext.currentTime + sound.duration
+        );
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + sound.duration);
+      }
+
+      // Play a sequence of notes for the winner sound
+      function playWinnerSound() {
+        if (!soundEnabled || !isAudioInitialized) return;
+        
+        const notes = [
+          { frequency: 784, duration: 0.2 },  // G5
+          { frequency: 880, duration: 0.2 },  // A5
+          { frequency: 1047, duration: 0.4 }  // C6
+        ];
+        
+        let time = audioContext.currentTime;
+        
+        notes.forEach((note, index) => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(note.frequency, time);
+          
+          gainNode.gain.setValueAtTime(0.2, time);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, time + note.duration);
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.start(time);
+          oscillator.stop(time + note.duration);
+          
+          time += note.duration * 0.8; // Slight overlap
+        });
+      }
+
+      // Play spinning sound with ticking
+      function playSpinningSound() {
+        if (!soundEnabled || !isAudioInitialized) return;
+        
+        // Initial spin sound
+        playSound('spin');
+        
+        // Ticking sounds during spin
+        let tickCount = 0;
+        const maxTicks = 20;
+        const tickInterval = setInterval(() => {
+          if (tickCount < maxTicks && soundEnabled) {
+            playSound('tick');
+            tickCount++;
+          } else {
+            clearInterval(tickInterval);
+          }
+        }, 200);
+      }
+
+      function renderWheel() {
+        wheel.querySelectorAll(".wheel-label").forEach((e) => e.remove());
+
+        const segmentAngle = 360 / months.length;
+
+        months.forEach((entry, index) => {
+          const label = document.createElement("div");
+          label.className = "wheel-label";
+          label.style.transform = `rotate(${index * segmentAngle}deg)`;
+          label.innerHTML = `<span>${entry}</span>`;
+          wheel.appendChild(label);
+        });
+      }
+
+      function renderMonthList() {
+        monthList.innerHTML = "";
+        months.forEach((entry, index) => {
+          const div = document.createElement("div");
+          div.className = "month-item";
+
+          const name = document.createElement("span");
+          name.textContent = entry;
+
+          const actions = document.createElement("div");
+          actions.className = "month-actions";
+
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "✎";
+          editBtn.onclick = () => editMonth(index);
+          editBtn.onmouseenter = () => playSound('hover');
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "🗑";
+          deleteBtn.onclick = () => deleteMonth(index);
+          deleteBtn.onmouseenter = () => playSound('hover');
+
+          actions.appendChild(editBtn);
+          actions.appendChild(deleteBtn);
+
+          div.appendChild(name);
+          div.appendChild(actions);
+          monthList.appendChild(div);
+        });
+
+        renderWheel();
+      }
+
+      function spinWheel() {
+        initAudio(); // Initialize audio on first interaction
+        
+        if (months.length === 0) {
+          alert("Please add at least one costume!");
+          return;
+        }
+
+        spinBtn.disabled = true;
+        spinBtn.classList.add('spinning');
+
+        // Play spinning sound
+        playSpinningSound();
+
+        const segmentAngle = 360 / months.length;
+        const offset = segmentAngle / 2 + 45;
+
+        const spinDegrees = 5 * 360 + Math.floor(Math.random() * 360);
+        currentRotation += spinDegrees;
+
+        wheel.style.transition = "transform 4s cubic-bezier(0.3, 0.7, 0.2, 1)";
+        wheel.style.transform = `rotate(-${currentRotation}deg)`;
+
+        setTimeout(() => {
+          const normalizedRotation = currentRotation % 360;
+          const pointedAngle = (normalizedRotation + 45) % 360;
+          const winnerIndex =
+            Math.floor(pointedAngle / segmentAngle) % months.length;
+
+          showWinner(months[winnerIndex]);
+          spinBtn.disabled = false;
+          spinBtn.classList.remove('spinning');
+        }, 4000);
+      }
+
+      function showWinner(text) {
+        winnerText.textContent = text;
+        winnerModal.classList.add("show");
+        fullConfetti.classList.add("show");
+
+        // Play victory sound
+        setTimeout(() => playWinnerSound(), 100);
+
+        const modalConfetti = document.querySelector(".confetti");
+        modalConfetti.innerHTML = "";
+        for (let i = 0; i < 3; i++) {
+          const confettiPiece = document.createElement("div");
+          modalConfetti.appendChild(confettiPiece);
+        }
+
+        fullConfetti.innerHTML = "";
+        for (let i = 0; i < 5; i++) {
+          const confettiPiece = document.createElement("div");
+          fullConfetti.appendChild(confettiPiece);
+        }
+      }
+
+      function closeModal() {
+        playSound('button');
+        winnerModal.classList.remove("show");
+        fullConfetti.classList.remove("show");
+      }
+
+      function addMonth() {
+        initAudio();
+        const input = document.getElementById("newMonth");
+        const value = input.value.trim();
+        if (value && !months.includes(value)) {
+          months.push(value);
+          input.value = "";
+          renderMonthList();
+          playSound('add');
+        }
+      }
+
+      function editMonth(index) {
+        initAudio();
+        const newName = prompt("Edit costume:", months[index]);
+        if (newName && newName.trim() !== "") {
+          months[index] = newName.trim();
+          renderMonthList();
+          playSound('button');
+        }
+      }
+
+      function deleteMonth(index) {
+        initAudio();
+        if (confirm("Delete this costume?")) {
+          months.splice(index, 1);
+          renderMonthList();
+          playSound('delete');
+        }
+      }
+
+      function toggleSound() {
+        soundEnabled = !soundEnabled;
+        soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+        soundToggle.classList.toggle('muted', !soundEnabled);
+        soundToggle.title = soundEnabled ? 'Mute Sound' : 'Enable Sound';
+        
+        if (soundEnabled) {
+          playSound('button');
+        }
+      }
+
+      // Add hover sound effects to buttons
+      function addHoverSounds() {
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+          if (!button.onmouseenter) {
+            button.addEventListener('mouseenter', () => playSound('hover'));
+          }
+        });
+      }
+
+      // Add enter key support for input
+      document.getElementById('newMonth').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          addMonth();
+        }
+      });
+
+      // Initialize
+      renderMonthList();
+      addHoverSounds();
+      spinBtn.addEventListener("click", spinWheel);
+      soundToggle.addEventListener('click', toggleSound);
+
+      // Re-add hover sounds when month list is re-rendered
+      const originalRenderMonthList = renderMonthList;
+      renderMonthList = function() {
+        originalRenderMonthList();
+        setTimeout(addHoverSounds, 0);
+      };
+    </script>
+  </body>
+</html>
